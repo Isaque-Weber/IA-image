@@ -1,22 +1,29 @@
 import httpx
 import asyncio
+import base64
 import json
+import os
 
 async def main():
     # URL do servidor
-    url_servidor = "http://127.0.0.1:8000/analisar-prato-url/"
+    url_servidor = "http://127.0.0.1:8000/analisar-prato-base64/"
     
-    # URL publica para envio
-    # URL publica para envio: frango assado
-    url_publica = "https://upload.wikimedia.org/wikipedia/commons/2/2a/By_Carlos_Barretta_stk_001960_%2811015779056%29.jpg"
+    # Nome do arquivo local para converter e enviar como string
+    arquivo_local = "prato-frango.jpg"
+
+    if not os.path.exists(arquivo_local):
+        print(f"Erro: Arquivo '{arquivo_local}' não encontrado.")
+        return
+
+    print(f"--- Testando Rota de Base64 String ---")
+    print(f"Lendo e convertendo arquivo: {arquivo_local}")
     
-    print(f"--- Testando Rota de URL (Direta) ---")
-    print(f"Enviando URL: {url_publica}")
-    print(f"Para: {url_servidor}")
-    
+    with open(arquivo_local, "rb") as image_file:
+        encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
+
     # Payload no formato JSON
     payload = {
-        "image_url": url_publica
+        "image_base64": encoded_string
     }
     
     print(f"Enviando para: {url_servidor}")
@@ -38,8 +45,12 @@ async def main():
                 print(json.dumps(dados, indent=2, ensure_ascii=False))
             else:
                 print(f"\n❌ Erro {response.status_code}:")
-                print(response.text)
-                
+                # print(response.text) # Uncomment if you want to see full error text
+                try:
+                    print(json.dumps(response.json(), indent=2))
+                except:
+                    print(response.text)
+
     except Exception as e:
         print(f"\n❌ Erro de conexão: {e}")
 

@@ -2,13 +2,14 @@ import httpx
 import asyncio
 import os
 import json
+import time
 
 async def main():
     # URL do servidor
-    url_servidor = "http://127.0.0.1:8000/analisar-prato/"
+    url_servidor = "http://127.0.0.1:8000/analisar-prato-arquivo/"
     
     # Nome do arquivo local
-    arquivo_local = "plato.jpeg"
+    arquivo_local = "prato-frango.jpg"
 
     if not os.path.exists(arquivo_local):
         print(f"Erro: Arquivo '{arquivo_local}' não encontrado.")
@@ -18,6 +19,8 @@ async def main():
     print(f"Enviando arquivo: {arquivo_local}")
     print(f"Para: {url_servidor}")
     
+    start_time = time.time()
+    
     try:
         async with httpx.AsyncClient(timeout=60.0) as client:
             # Enviando o arquivo via multipart/form-data
@@ -25,6 +28,10 @@ async def main():
             files = {'imagem': open(arquivo_local, 'rb')}
             
             response = await client.post(url_servidor, files=files)
+            
+            end_time = time.time()
+            latency = end_time - start_time
+            print(f"⏱️ Latência: {latency:.2f} segundos")
             
             if response.status_code == 200:
                 print("\n✅ Sucesso! Resposta do servidor:")
